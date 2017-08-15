@@ -1,7 +1,4 @@
 module.exports = {
-  /*
-  ** Headers of the page
-  */
   head: {
     title: 'nuxt-project',
     meta: [
@@ -13,21 +10,8 @@ module.exports = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
-  /*
-  ** Customize the progress-bar color
-  */
   loading: '~/components/loading.vue',
-  // loading: { 
-  //   color: '#3B8070',
-  //   height: '5px'
-  // },
-  /*
-  ** Build configuration
-  */
   build: {
-    /*
-    ** Run ESLINT on save
-    */
     extend (config, ctx) {
       if (ctx.dev && ctx.isClient) {
         config.module.rules.push({
@@ -39,6 +23,8 @@ module.exports = {
       }
     }
   },
+  vendor: ['mint-ui'],
+  plugins: ['~plugins/mint-ui.js'],
   cache: {
     max: 1000,
     maxAge: 900000
