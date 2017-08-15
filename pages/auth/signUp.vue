@@ -1,6 +1,8 @@
 <template>
   <div>
-    <mt-header title="注册"></mt-header>
+    <mt-header title="注册">
+      <mt-button icon="back" slot="left" @click="$router.back()"></mt-button>
+    </mt-header>
     <section class="w-auth-container">
       <div class="w-auth-form">
         <mt-field label="邮箱:" placeholder="请输入邮箱地址" v-model="account"></mt-field>
