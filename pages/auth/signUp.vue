@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <mt-header title="注册">
+  <div class="p-auth-signUp">
+    <mt-header title="用户注册">
       <mt-button icon="back" slot="left" @click="$router.back()"></mt-button>
     </mt-header>
     <section class="w-auth-container">
@@ -27,6 +27,9 @@ export default {
 </script>
 
 <style>
+.p-auth-signUp {
+  height: 100%;
+}
 .w-auth-container {
   display: flex;
   flex-direction: column;

@@ -16,6 +16,10 @@ html
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
 }
+html, body, #__nuxt, #__nuxt>div {
+  height: 100%;
+  overflow: auto;
+}
 *, *:before, *:after
 {
   box-sizing: border-box;

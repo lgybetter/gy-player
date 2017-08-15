@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <mt-header title="登陆"></mt-header>
+  <div class="p-auth-signIn">
+    <mt-header title="用户登陆"></mt-header>
     <section class="w-auth-container">
       <div class="w-auth-form">
         <mt-field label="邮箱:" placeholder="请输入邮箱地址" v-model="account"></mt-field>
@@ -32,6 +32,9 @@ export default {
 </script>
 
 <style>
+.p-auth-signIn {
+  height: 100%;
+}
 .w-auth-container {
   display: flex;
   flex-direction: column;
