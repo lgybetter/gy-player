@@ -2,6 +2,9 @@
   height: 48px; 
   font-size: 20px; 
 }
+.mint-search {
+  height: 100%;
+}
 .mint-cell-wrapper { 
   background: white; 
 }
