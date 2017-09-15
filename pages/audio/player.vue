@@ -13,7 +13,7 @@
       <canvas ref="audioCanvas" class="w-audio-balanced"></canvas>
       <div class="w-progess-bar">
         <span>{{parseInt(currentTime)}}</span>
-        <silde-bar :cur="currentTime" :total="totalTime"></silde-bar>
+        <silde-bar v-model="currentTime" :total="totalTime" @input="handleSlideChange"></silde-bar>
       </div>
       <div class="w-player-controller">
         <div class="w-player-btn"><img src="http://os32fgzvj.bkt.clouddn.com/%E5%81%9C%E6%AD%A2.png"></img></div>
@@ -52,6 +52,9 @@ export default {
   methods: {
     timeupdate (event) {
       this.currentTime = this.$refs.audioPlayer.currentTime
+    },
+    handleSlideChange (value) {
+      this.$refs.audioPlayer.currentTime = value
     },
     play () {
       const audio = this.$refs.audioPlayer

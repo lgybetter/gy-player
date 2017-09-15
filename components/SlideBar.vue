@@ -1,7 +1,7 @@
 <template>
   <div class="w-slide-bar" ref="slideBar">
-    <div class="w-slide-bar-line w-slide-bar-curline" ref="curline"></div>
-    <div class="w-slide-bar-line w-slide-bar-remainline" ref="remainline"><div class="w-slide-bar-btn" @touchstart="handleTouchStart" @touchend="handleTouchEnd" @touchmove="handleTouchMove" ></div></div>
+    <div class="w-slide-bar-line w-slide-bar-curline" ref="curline" :style="curWidth"></div>
+    <div class="w-slide-bar-line w-slide-bar-remainline" ref="remainline" :style="remainWidth"><div class="w-slide-bar-btn" @touchstart="handleTouchStart" @touchend="handleTouchEnd" @touchmove="handleTouchMove" ></div></div>
   </div>
 </template>
 
@@ -16,51 +16,75 @@ export default {
       type: Number,
       required: true
     },
-    cur: {
+    value: {
       type: Number,
       required: true,
       default: 0
     }
   },
   watch: {
-    cur (val) {
-      this.remainWidth = parseInt(parseFloat(((this.total - val) / this.total).toFixed(2)) * this.totalWidth)
-      this.curWidth = parseInt(parseFloat((val / this.total).toFixed(2)) * this.totalWidth)
-      this.$refs.remainline.style.width = `${this.remainWidth}px`
-      this.$refs.curline.style.width = `${this.curWidth}px`
+    value (val) {
+      this.inputValue = val
+    },
+    inputValue (val) {
+      this.$emit('input', val)
+    }
+  },
+  computed: {
+    percent () {
+      let _percent = (this.inputValue / this.total) * 100
+      return _percent > 100 ? 100 : _percent < 0 ? 0 : _percent
+    },
+    remainWidth: {
+      get: function () {
+        return { width: `${100 - this.percent}%` }
+      },
+      set: function (val) {
+      }
+    },
+    curWidth: {
+      get: function () {
+        return { width: `${this.percent}%` }
+      },
+      set: function (val) {
+      }
     }
   },
   data () {
     return {
-      totalWidth: 0,
-      curWidth: 0,
-      remainWidth: 0,
-      slideStart: 0,
-      slideEnd: 0,
-      slideDis: 0
+      inputValue: this.value
     }
   },
   methods: {
     handleTouchStart (e) {
-      console.log(this.$refs.remainline.offsetLeft)
-      this.slideStart = event.touches[0].pageX
-      this.slideEnd = this.slideStart
-      console.log('start', this.slideEnd)
+      this.setValue(e.touches[0])
+      e.preventDefault()
+      this.dragging = true
+      this.active = true
     },
     handleTouchMove (e) {
-      const slideEndPre = this.slideEnd
-      console.log('slideEndPre', slideEndPre)
-      this.slideEnd = parseFloat(event.touches[0].pageX)
-      console.log('slideEnd', this.slideEnd)
-      const curSlideDis = parseFloat(this.slideEnd - slideEndPre)
-      this.curWidth = parseFloat(this.curWidth + curSlideDis)
-      this.$refs.curline.style.width = `${this.curWidth}px`
+      if (this.dragRunning) return
+      this.dragRunning = true
+      window.requestAnimationFrame(() => {
+        this.dragRunning = false
+        this.setValue(e.touches[0])
+      })
     },
     handleTouchEnd (e) {
-      this.slideDis = this.slideEnd - this.slideStart
-      const timeDis = (this.slideDis / this.totalWidth) * this.total
-      console.log(timeDis)
-      console.log('touchEnd', this.slideDis)
+      this.dragging = false
+      this.active = false
+      this.$emit('change', this.inputValue)
+    },
+    setValue (e) {
+      const { $el, total } = this
+      let value = (e.clientX - $el.getBoundingClientRect().left) / $el.offsetWidth * total
+      value = parseFloat(value.toFixed(5))
+      if (value > total) {
+        value = total
+      } else if (value < 0) {
+        value = 0
+      }
+      this.inputValue = value
     }
   }
 }
