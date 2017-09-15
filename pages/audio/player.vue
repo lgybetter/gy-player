@@ -1,6 +1,12 @@
 <template>
   <div class="p-audio-player">
+    <pop-up v-model="showMenu">
+      <div slot="body">
+        <h3 class="w-music-list">我的歌单</h3>
+      </div>
+    </pop-up>
     <header>
+      <div class="w-player-btn" @click="handleShowMenu"><img src="~assets/images/icons/menu.png"></img></div>
     </header>
     <section class="w-player-section">
       <div class="w-music-msg">
@@ -16,11 +22,14 @@
         <silde-bar v-model="currentTime" :total="totalTime" @input="handleSlideChange"></silde-bar>
       </div>
       <div class="w-player-controller">
-        <div class="w-player-btn"><img src="http://os32fgzvj.bkt.clouddn.com/%E5%81%9C%E6%AD%A2.png"></img></div>
-        <div class="w-player-btn"><img src="http://os32fgzvj.bkt.clouddn.com/%E5%BF%AB%E9%80%80.png"></img></div>
-        <div class="w-player-btn w-player-btn-max" @click="play"><img src="http://os32fgzvj.bkt.clouddn.com/%E6%92%AD%E6%94%BE.png"></img></div>        
-        <div class="w-player-btn"><img src="http://os32fgzvj.bkt.clouddn.com/%E5%BF%AB%E8%BF%9B.png"></img></div>
-        <div class="w-player-btn"><img src="http://os32fgzvj.bkt.clouddn.com/%E4%BF%A1%E6%81%AF.png"></img></div>
+        <div class="w-player-btn"><img src="~assets/images/icons/stop.png" @click="stop"></img></div>
+        <div class="w-player-btn"><img src="~assets/images/icons/pre.png"></img></div>
+        <div class="w-player-btn w-player-btn-max" @click="play">
+          <img v-if="!playing" src="~assets/images/icons/play.png"></img>
+          <img v-if="playing" src="~assets/images/icons/pause.png"></img>
+        </div>    
+        <div class="w-player-btn"><img src="~assets/images/icons/next.png"></img></div>
+        <div class="w-player-btn"><img src="~assets/images/icons/comment.png"></img></div>
       </div>
       <audio ref="audioPlayer" :src="audio.path" :autoplay="false" crossOrigin="anonymous" @timeupdate="timeupdate"></audio>
       <!-- <button @click="play">Test</button> -->
@@ -32,29 +41,43 @@
 
 <script>
 import sildeBar from '../../components/SlideBar'
+import popUp from '../../components/PopUp'
 // import { dateFormat } from '../../utils/index.js'
 export default {
   data () {
     return {
       audio: {
-        path: 'http://os32fgzvj.bkt.clouddn.com/Elvins.J%20-%20Conan%C2%A0Rock%C2%A0%28%E6%91%87%E6%BB%9A%E7%89%88%E5%90%8D%E4%BE%A6%E6%8E%A2%E6%9F%AF%E5%8D%97%E4%B8%BB%E9%A2%98%E6%9B%B2%29.mp3'
+        path: 'http://os32fgzvj.bkt.clouddn.com/%E5%95%8A%E6%A0%8B%20-%20%E6%9C%B4%E6%A0%91-%E5%B9%B3%E5%87%A1%E4%B9%8B%E8%B7%AFDJ%EF%BC%88%E5%95%8A%E6%A0%8BRemix%EF%BC%89.mp3'
       },
       autoplay: false,
       playing: false,
       inited: false,
       currentTime: 0,
-      totalTime: 0
+      totalTime: 0,
+      showMenu: false
     }
   },
   components: {
-    sildeBar
+    sildeBar,
+    popUp
   },
   methods: {
     timeupdate (event) {
       this.currentTime = this.$refs.audioPlayer.currentTime
+      if (this.currentTime >= this.totalTime) {
+        this.currentTime = 0
+      }
     },
     handleSlideChange (value) {
       this.$refs.audioPlayer.currentTime = value
+    },
+    handleShowMenu () {
+      this.showMenu = true
+    },
+    stop () {
+      this.playing = !this.playing
+      this.$refs.audioPlayer.pause()
+      this.currentTime = 0
     },
     play () {
       const audio = this.$refs.audioPlayer
@@ -117,6 +140,8 @@ export default {
 header {
   display: flex;
   height: 50px;
+  align-items: center;
+  justify-content: flex-end;
 }
 .w-player-section {
   padding: 8px 16px;
@@ -184,6 +209,12 @@ header {
 .w-player-btn-max > img {
   width: 70px;
   height: 70px;
+}
+
+.w-music-list {
+  color: #fafad2;
+  text-align: center;
+  font-size: 18px;
 }
 
 </style>
