@@ -2,18 +2,25 @@
   <div class="p-audio-player">
     <pop-up v-model="showMenu">
       <div slot="body">
-        <h3 class="w-music-list">我的歌单</h3>
+        <h3 class="w-music-list-title">我的歌单</h3>
+        <draggable class="w-music-list" element="ul" v-model="musicList" :options="dragOptions" :move="handleMove" @start="isDragging=true"　@end="isDragging=false">
+          <transition-group type="transition" :name="'flip-list'">
+            <li class="w-music-list-item" v-for="item in musicList" :key="item.order"> 
+              {{item.name}}
+            </li> 
+          </transition-group>
+        </draggable>
       </div>
     </pop-up>
     <header>
-      <div class="w-player-btn" @click="handleShowMenu"><img src="~assets/images/icons/menu.png"></img></div>
+      <div class="w-player-btn w-palyer-btn-min" @click="handleShowMenu"><img src="~assets/images/icons/menu.png"></img></div>
     </header>
     <section class="w-player-section">
       <div class="w-music-msg">
-        <img class="w-avator-icon" src="http://os32fgzvj.bkt.clouddn.com/d57586537c5f44728925090d0cca10a1-head-picture.jpg"></img>
+        <img class="w-avator-icon" :src="currentMusic.image"></img>
         <div class="w-music-detail">
-          <h1>xxxx</h1>
-          <h2>xxxx</h2>
+          <h1>{{currentMusic.name}}</h1>
+          <h2>{{currentMusic.author}}</h2>
         </div>
       </div>
       <canvas ref="audioCanvas" class="w-audio-balanced"></canvas>
@@ -23,15 +30,15 @@
       </div>
       <div class="w-player-controller">
         <div class="w-player-btn"><img src="~assets/images/icons/stop.png" @click="stop"></img></div>
-        <div class="w-player-btn"><img src="~assets/images/icons/pre.png"></img></div>
-        <div class="w-player-btn w-player-btn-max" @click="play">
+        <div class="w-player-btn" @click="pre"><img src="~assets/images/icons/pre.png"></img></div>
+        <div class="w-player-btn w-player-btn-max" @click="toPlay">
           <img v-if="!playing" src="~assets/images/icons/play.png"></img>
           <img v-if="playing" src="~assets/images/icons/pause.png"></img>
         </div>    
-        <div class="w-player-btn"><img src="~assets/images/icons/next.png"></img></div>
+        <div class="w-player-btn" @click="next"><img src="~assets/images/icons/next.png"></img></div>
         <div class="w-player-btn"><img src="~assets/images/icons/comment.png"></img></div>
       </div>
-      <audio ref="audioPlayer" :src="audio.path" :autoplay="false" crossOrigin="anonymous" @timeupdate="timeupdate"></audio>
+      <audio ref="audioPlayer" :src="currentMusic.src" :autoplay="false" crossOrigin="anonymous" @timeupdate="timeupdate" @canplay="canplay"></audio>
       <!-- <button @click="play">Test</button> -->
     </section>
     <footer>
@@ -40,33 +47,107 @@
 </template>
 
 <script>
+import draggable from 'vuedraggable'
 import sildeBar from '../../components/SlideBar'
 import popUp from '../../components/PopUp'
+const list = [
+  {
+    name: '平凡之路DJ',
+    src: 'http://os32fgzvj.bkt.clouddn.com/%E5%95%8A%E6%A0%8B%20-%20%E6%9C%B4%E6%A0%91-%E5%B9%B3%E5%87%A1%E4%B9%8B%E8%B7%AFDJ%EF%BC%88%E5%95%8A%E6%A0%8BRemix%EF%BC%89.mp3',
+    image: 'http://os32fgzvj.bkt.clouddn.com/61f5f9ef033256b18c276766d6ba4a9f-1496423688843.jpg',
+    author: 'DJ'
+  },
+  {
+    name: '摇滚版名侦探柯南主题曲',
+    src: 'http://os32fgzvj.bkt.clouddn.com/Elvins.J%20-%20Conan%C2%A0Rock%C2%A0%28%E6%91%87%E6%BB%9A%E7%89%88%E5%90%8D%E4%BE%A6%E6%8E%A2%E6%9F%AF%E5%8D%97%E4%B8%BB%E9%A2%98%E6%9B%B2%29.mp3',
+    image: 'http://os32fgzvj.bkt.clouddn.com/79935f57a749ce19c07536534592079b-20150921111514727.jpg',
+    author: 'King'
+  },
+  {
+    name: '感激遇到你',
+    src: 'http://os32fgzvj.bkt.clouddn.com/%E6%84%9F%E6%BF%80%E9%81%87%E5%88%B0%E4%BD%A0.mp3',
+    image: 'http://os32fgzvj.bkt.clouddn.com/454595047.jpg',
+    author: 'Wei'
+  }
+]
 // import { dateFormat } from '../../utils/index.js'
 export default {
   data () {
     return {
-      audio: {
-        path: 'http://os32fgzvj.bkt.clouddn.com/%E5%95%8A%E6%A0%8B%20-%20%E6%9C%B4%E6%A0%91-%E5%B9%B3%E5%87%A1%E4%B9%8B%E8%B7%AFDJ%EF%BC%88%E5%95%8A%E6%A0%8BRemix%EF%BC%89.mp3'
-      },
       autoplay: false,
       playing: false,
       inited: false,
       currentTime: 0,
+      curIndex: 0,
       totalTime: 0,
-      showMenu: false
+      showMenu: false,
+      isDragging: false,
+      delayedDragging: false,
+      musicList: list.map((item, index) => {
+        return {
+          ...item,
+          order: index + 1,
+          fixed: false
+        }
+      })
+    }
+  },
+  watch: {
+    isDragging (newValue) {
+      if (newValue) {
+        this.delayedDragging = true
+        return
+      }
+      this.$nextTick(() => {
+        this.delayedDragging = false
+      })
+    }
+  },
+  computed: {
+    dragOptions () {
+      return {
+        animation: 0,
+        group: 'description',
+        disabled: false,
+        ghostClass: 'ghost'
+      }
+    },
+    currentMusic: {
+      get () {
+        return this.musicList[this.curIndex]
+      },
+      set () {
+      }
     }
   },
   components: {
     sildeBar,
-    popUp
+    popUp,
+    draggable
   },
   methods: {
     timeupdate (event) {
       this.currentTime = this.$refs.audioPlayer.currentTime
       if (this.currentTime >= this.totalTime) {
         this.currentTime = 0
+        this.curIndex = this.curIndex++ % this.musicList.length
       }
+    },
+    canplay () {
+      if (!this.playing) {
+        return
+      }
+      this.play()
+    },
+    pre () {
+      this.curIndex = this.curIndex - 1 < 0 ? this.musicList.length - 1 : --this.curIndex
+      console.log(this.curIndex, this.currentMusic.name, this.musicList)
+      this.currentTime = 0
+    },
+    next () {
+      this.curIndex = this.curIndex + 1 > this.musicList.length - 1 ? 0 : ++this.curIndex
+      console.log(this.curIndex, this.currentMusic.name, this.musicList)
+      this.currentTime = 0
     },
     handleSlideChange (value) {
       this.$refs.audioPlayer.currentTime = value
@@ -74,20 +155,28 @@ export default {
     handleShowMenu () {
       this.showMenu = true
     },
-    stop () {
+    handleMove ({relatedContext, draggedContext}) {
+      const relatedElement = relatedContext.element
+      const draggedElement = draggedContext.element
+      return (!relatedElement || !relatedElement.fixed) && !draggedElement.fixed
+    },
+    toPlay () {
       this.playing = !this.playing
+      if (this.playing) {
+        this.play()
+      } else {
+        this.$refs.audioPlayer.pause()
+      }
+    },
+    stop () {
+      this.playing = false
       this.$refs.audioPlayer.pause()
       this.currentTime = 0
     },
     play () {
       const audio = this.$refs.audioPlayer
       this.totalTime = audio.duration
-      this.playing = !this.playing
-      if (this.playing) {
-        audio.play()
-      } else {
-        this.$refs.audioPlayer.pause()
-      }
+      audio.play()
       if (this.inited) {
         return
       }
@@ -135,7 +224,7 @@ export default {
 <style scoped>
 .p-audio-player {
   height: 100%;
-  background: rgba(209, 95, 238, .5);
+  background: rgba(209, 95, 238, .3);
 }
 header {
   display: flex;
@@ -206,15 +295,42 @@ header {
   height: 35px;
 } 
 
+.w-player-btn > img:active {
+  transform: scale(1.1);
+}
+
 .w-player-btn-max > img {
   width: 70px;
   height: 70px;
 }
 
 .w-music-list {
+  margin: 16px 0;
+}
+
+.w-music-list-item {
+  display: block;
+  padding: 4px;
+  color: #f0fff0;
+}
+
+.w-music-list-title {
   color: #fafad2;
   text-align: center;
   font-size: 18px;
+}
+
+.w-palyer-btn-min > img {
+  width: 25px;
+  height: 25px;
+}
+
+.ghost {
+  opacity: .5;
+  background: #C8EBFB;
+}
+.flip-list-move {
+  transition: transform 0.5s;
 }
 
 </style>
