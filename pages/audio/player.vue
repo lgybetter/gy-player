@@ -1,23 +1,11 @@
 <template>
   <div class="p-audio-player">
-    <pop-up v-model="showMenu">
-      <div slot="body">
-        <h3 class="w-music-list-title">我的歌单</h3>
-        <draggable class="w-music-list" element="ul" v-model="musicList" :options="dragOptions" :move="handleMove" @start="isDragging=true"　@end="isDragging=false">
-          <transition-group type="transition" :name="'flip-list'">
-            <li class="w-music-list-item" v-for="item in musicList" :key="item.order"> 
-              {{item.name}}
-            </li> 
-          </transition-group>
-        </draggable>
-      </div>
-    </pop-up>
     <header>
       <div class="w-player-btn w-palyer-btn-min" @click="handleShowMenu"><img src="~assets/images/icons/menu.png"></img></div>
     </header>
     <section class="w-player-section">
       <div class="w-music-msg">
-        <img class="w-avator-icon" :src="currentMusic.image"></img>
+        <img :class="['w-avator-icon', { rotation: playing }]" :src="currentMusic.image"></img>
         <div class="w-music-detail">
           <h1>{{currentMusic.name}}</h1>
           <h2>{{currentMusic.author}}</h2>
@@ -25,7 +13,7 @@
       </div>
       <canvas ref="audioCanvas" class="w-audio-balanced"></canvas>
       <div class="w-progess-bar">
-        <span>{{parseInt(currentTime)}}</span>
+        <span>{{parseInt(currentTime) | formatSec}}</span>
         <silde-bar v-model="currentTime" :total="totalTime" @input="handleSlideChange"></silde-bar>
       </div>
       <div class="w-player-controller">
@@ -43,6 +31,19 @@
     </section>
     <footer>
     </footer>
+    <pop-up v-model="showMenu">
+      <div slot="body">
+        <h3 class="w-music-list-title">我的歌单</h3>
+        <draggable class="w-music-list" element="ul" v-model="musicList" :options="dragOptions" :move="handleMove" @start="isDragging=true"　@end="isDragging=false">
+          <transition-group type="transition" :name="'flip-list'">
+            <li class="w-music-list-item" v-for="item in musicList" :key="item.order"> 
+              {{item.name}}
+            </li> 
+          </transition-group>
+        </draggable>
+      </div>
+    </pop-up>
+    <div class="w-background-blur" :style="background"></div>
   </div>
 </template>
 
@@ -50,6 +51,7 @@
 import draggable from 'vuedraggable'
 import sildeBar from '../../components/SlideBar'
 import popUp from '../../components/PopUp'
+import { formatSec } from '../../utils'
 const list = [
   {
     name: '平凡之路DJ',
@@ -72,6 +74,9 @@ const list = [
 ]
 // import { dateFormat } from '../../utils/index.js'
 export default {
+  filters: {
+    formatSec
+  },
   data () {
     return {
       autoplay: false,
@@ -118,6 +123,9 @@ export default {
       },
       set () {
       }
+    },
+    background () {
+      return { background: `url(${this.musicList[this.curIndex].image}) no-repeat 100% 100%` }
     }
   },
   components: {
@@ -129,8 +137,7 @@ export default {
     timeupdate (event) {
       this.currentTime = this.$refs.audioPlayer.currentTime
       if (this.currentTime >= this.totalTime) {
-        this.currentTime = 0
-        this.curIndex = this.curIndex++ % this.musicList.length
+        this.next()
       }
     },
     canplay () {
@@ -141,12 +148,10 @@ export default {
     },
     pre () {
       this.curIndex = this.curIndex - 1 < 0 ? this.musicList.length - 1 : --this.curIndex
-      console.log(this.curIndex, this.currentMusic.name, this.musicList)
       this.currentTime = 0
     },
     next () {
       this.curIndex = this.curIndex + 1 > this.musicList.length - 1 ? 0 : ++this.curIndex
-      console.log(this.curIndex, this.currentMusic.name, this.musicList)
       this.currentTime = 0
     },
     handleSlideChange (value) {
@@ -208,7 +213,7 @@ export default {
           drawX = i * lineWidth
           drawY = parseInt(Math.max((height - value / 2), 10))
           context.beginPath()
-          context.strokeStyle = '#d590da'
+          context.strokeStyle = 'rgba(209,95,238,.6)'
           context.moveTo(drawX, height)
           context.lineTo(drawX, drawY)
           context.stroke()
@@ -224,7 +229,6 @@ export default {
 <style scoped>
 .p-audio-player {
   height: 100%;
-  background: rgba(209, 95, 238, .3);
 }
 header {
   display: flex;
@@ -245,6 +249,8 @@ header {
 .w-avator-icon {
   width: 100px;
   height: 100px;
+  /* box-shadow: -1px 0 1px #ccc, 0 0 0 #ccc, 1px 0 1px #ccc, 0 1.5px 1px #ccc; */
+  -webkit-filter: drop-shadow(2px 2px 10px #fafad2) drop-shadow(-2px -2px 10px #fafad2);
   border-radius: 50%;
 }
 
@@ -254,14 +260,23 @@ header {
   flex-direction: column;
 }
 
+.w-music-detail h1, h2 {
+  display: -webkit-box;
+  width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .w-music-detail h1 {
   font-size: 18px;
-  color: #FAFAD2;
+  color: #d590da;
 }
 
 .w-music-detail h2 {
   font-size: 15px;
-  color: #F0FFF0;
+  color: #b580c0;
 }
 
 .w-audio-balanced {
@@ -327,10 +342,34 @@ header {
 
 .ghost {
   opacity: .5;
-  background: #C8EBFB;
+  background: #fafad2;
+  border-radius: 3px;
 }
 .flip-list-move {
   transition: transform 0.5s;
+}
+
+.w-background-blur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -10;
+  width: 100%;
+  height: 100%;
+  -webkit-filter: blur(4px);
+}
+
+.rotation {
+  animation: rotating 6s infinite linear;
+}
+
+@keyframes rotating {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
 }
 
 </style>

@@ -172,3 +172,15 @@ export function getDateWidthDayOffset (offset) {
 
   return oDate
 }
+
+export function formatSec (s) {
+  let m = parseInt(s / 60)
+  s = s - m * 60
+  if (m < 10) {
+    m = '0' + m
+  }
+  if (s < 10) {
+    s = '0' + s
+  }
+  return m + ' : ' + s
+}

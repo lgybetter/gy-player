@@ -51,6 +51,7 @@ export default {
 .w-popup-container {
   display: block;
   position: fixed;
+  top: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, .2);
@@ -62,8 +63,9 @@ export default {
   padding: 16px 8px;
   height: 100%;
   width: 250px;
+  -webkit-filter: drop-shadow(5px 0 5px #fafad2);
   left: -250px;
-  background: rgba(209,95,238,.8);
+  background: rgba(209,95,238,.6);
   transition: left .5s;
 }
 
