@@ -10,7 +10,7 @@ module.exports = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ],
     script: [
-      { src: 'http://os32fgzvj.bkt.clouddn.com/flexible.min.js' }
+      { src: '/js/flexible.min.js' }
     ]
   },
   loading: '~/components/loading.vue',
