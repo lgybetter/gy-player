@@ -24,10 +24,12 @@ export default {
   },
   watch: {
     value (val) {
-      this.inputValue = val
+      if (!this.dragging) {
+        this.inputValue = val
+      }
     },
     inputValue (val) {
-      this.$emit('input', val)
+      this.$emit('input', this.inputValue)
     }
   },
   computed: {
@@ -52,6 +54,7 @@ export default {
   },
   data () {
     return {
+      dragging: false,
       inputValue: this.value
     }
   },

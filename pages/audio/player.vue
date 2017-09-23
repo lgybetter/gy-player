@@ -11,10 +11,15 @@
           <h2>{{currentMusic.author}}</h2>
         </div>
       </div>
-      <canvas ref="audioCanvas" class="w-audio-balanced"></canvas>
+      <template v-if="audioContext">
+        <canvas ref="audioCanvas" class="w-audio-balanced"></canvas>
+      </template>
+      <template v-else>
+        <div class="w-info-tips">当前浏览器不支持音频分析</div>
+      </template>
       <div class="w-progess-bar">
         <span>{{parseInt(currentTime) | formatSec}}</span>
-        <silde-bar v-model="currentTime" :total="totalTime" @input="handleSlideChange"></silde-bar>
+        <silde-bar v-model="currentTime" :total="totalTime" @change="handleSlideChange"></silde-bar>
       </div>
       <div class="w-player-controller">
         <div class="w-player-btn"><img src="~assets/images/icons/stop.png" @click="stop"></img></div>
@@ -27,7 +32,6 @@
         <div class="w-player-btn"><img src="~assets/images/icons/comment.png"></img></div>
       </div>
       <audio ref="audioPlayer" :src="currentMusic.src" :autoplay="false" crossOrigin="anonymous" @timeupdate="timeupdate" @canplay="canplay"></audio>
-      <!-- <button @click="play">Test</button> -->
     </section>
     <footer>
     </footer>
@@ -52,6 +56,7 @@ import draggable from 'vuedraggable'
 import sildeBar from '../../components/SlideBar'
 import popUp from '../../components/PopUp'
 import { formatSec } from '../../utils'
+import { initAudioContext } from './audio-context'
 const list = [
   {
     name: '平凡之路DJ',
@@ -72,10 +77,22 @@ const list = [
     author: 'Wei'
   }
 ]
-// import { dateFormat } from '../../utils/index.js'
 export default {
   filters: {
     formatSec
+  },
+  created () {
+    this.curIndex = 0
+    this.musicList = list.map((item, index) => {
+      return {
+        ...item,
+        order: index + 1,
+        fixed: false
+      }
+    })
+  },
+  mounted () {
+    this.audioContextFlag = window.AudioContext || window.webkitAudioContext
   },
   data () {
     return {
@@ -83,18 +100,14 @@ export default {
       playing: false,
       inited: false,
       currentTime: 0,
-      curIndex: 0,
-      totalTime: 0,
+      totalTime: 9999,
       showMenu: false,
       isDragging: false,
       delayedDragging: false,
-      musicList: list.map((item, index) => {
-        return {
-          ...item,
-          order: index + 1,
-          fixed: false
-        }
-      })
+      musicList: [],
+      curIndex: 0,
+      audioContextFlag: 0,
+      test: 
     }
   },
   watch: {
@@ -109,6 +122,9 @@ export default {
     }
   },
   computed: {
+    audioContext () {
+      return this.audioContextFlag != null
+    },
     dragOptions () {
       return {
         animation: 0,
@@ -149,10 +165,12 @@ export default {
     pre () {
       this.curIndex = this.curIndex - 1 < 0 ? this.musicList.length - 1 : --this.curIndex
       this.currentTime = 0
+      this.playing = false
     },
     next () {
       this.curIndex = this.curIndex + 1 > this.musicList.length - 1 ? 0 : ++this.curIndex
       this.currentTime = 0
+      this.playing = false
     },
     handleSlideChange (value) {
       this.$refs.audioPlayer.currentTime = value
@@ -180,49 +198,16 @@ export default {
     },
     play () {
       const audio = this.$refs.audioPlayer
+      const canvas = this.$refs.audioCanvas
       this.totalTime = audio.duration
       audio.play()
       if (this.inited) {
         return
       }
       this.inited = true
-      const AudioContext = window.AudioContext || window.webkitAudioContext
-      const audioContext = new AudioContext()
-      const source = audioContext.createMediaElementSource(audio)
-      const analyser = audioContext.createAnalyser()
-      source.connect(analyser)
-      analyser.connect(audioContext.destination)
-      const audioCanvas = this.$refs.audioCanvas
-      const context = audioCanvas.getContext('2d')
-      let arrData = new Uint8Array(analyser.frequencyBinCount)
-      let count = Math.min(500, arrData.length)
-      let step = Math.round(arrData.length * 0.6 / count)
-      let value = 0
-      let drawX = 0
-      let drawY = 0
-      let height = audioCanvas.height
-      let width = audioCanvas.width
-      let lineWidth = context.lineWidth = audioCanvas.width / count * 10
-      context.lineWidth = lineWidth
-      render()
-      function render () {
-        context.clearRect(0, 0, width, height)
-        analyser.getByteFrequencyData(arrData)
-        for (let i = 0; i < count / 10; i++) {
-          value = arrData[i * step + step]
-          drawX = i * lineWidth
-          drawY = parseInt(Math.max((height - value / 2), 10))
-          context.beginPath()
-          context.strokeStyle = 'rgba(209,95,238,.6)'
-          context.moveTo(drawX, height)
-          context.lineTo(drawX, drawY)
-          context.stroke()
-        }
-        requestAnimationFrame(render)
-      }
+      initAudioContext.call(this, audio, canvas)
     }
   }
-
 }
 </script>
 
@@ -361,6 +346,15 @@ header {
 
 .rotation {
   animation: rotating 6s infinite linear;
+}
+
+.w-info-tips {
+  width: 100%;
+  height: 250px;
+  line-height: 250px;
+  color: #d590da;
+  font-size: 20px;
+  text-align: center;
 }
 
 @keyframes rotating {
