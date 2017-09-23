@@ -9,3 +9,8 @@ export default {
 }
 </script>
 
+<style>
+@import '../assets/style/normal.css';
+</style>
+
+

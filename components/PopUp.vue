@@ -17,9 +17,9 @@ export default {
   watch: {
     value (val) {
       this.openInner = val
-      setTimeout(() => {
-        this.show = val
-      }, 1)
+      // this.$nextTick(() => {
+      this.show = val
+      // })
     }
   },
   data () {
@@ -37,10 +37,10 @@ export default {
     handleClick (e) {
       if (e.srcElement !== this.$refs.content) {
         this.show = false
-        setTimeout(() => {
-          this.openInner = false
-          this.$emit('input', false)
-        }, 500)
+        // setTimeout(() => {
+        this.openInner = false
+        this.$emit('input', false)
+        // }, 500)
       }
     }
   }
@@ -52,6 +52,7 @@ export default {
   display: block;
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, .2);
@@ -64,6 +65,7 @@ export default {
   height: 100%;
   width: 250px;
   -webkit-filter: drop-shadow(5px 0 5px #fafad2);
+  top: 0;
   left: -250px;
   background: rgba(209,95,238,.6);
   transition: left .5s;
