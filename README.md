@@ -1,8 +1,6 @@
-# nuxt-project
+# H5音乐播放器
 
-> Nuxt.js project
-
-## Build Setup
+## 运行编译
 
 ``` bash
 # install dependencies
@@ -18,5 +16,6 @@ $ npm start
 # generate static project
 $ npm run generate
 ```
+## 运行效果
+![运行效果](./docs/player.png)
 
-For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
