@@ -17,9 +17,9 @@ export default {
   watch: {
     value (val) {
       this.openInner = val
-      // this.$nextTick(() => {
-      this.show = val
-      // })
+      this.$nextTick(() => {
+        this.show = val
+      })
     }
   },
   data () {
@@ -37,10 +37,10 @@ export default {
     handleClick (e) {
       if (e.srcElement !== this.$refs.content) {
         this.show = false
-        // setTimeout(() => {
-        this.openInner = false
-        this.$emit('input', false)
-        // }, 500)
+        setTimeout(() => {
+          this.openInner = false
+          this.$emit('input', false)
+        }, 500)
       }
     }
   }
