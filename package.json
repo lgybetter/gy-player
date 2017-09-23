@@ -16,6 +16,7 @@
     "axios": "^0.16.2",
     "mint-ui": "^2.2.9",
     "nuxt": "^1.0.0-rc3",
+    "postcss-px2rem": "^0.3.0",
     "vuedraggable": "^2.14.1"
   },
   "devDependencies": {

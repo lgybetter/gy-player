@@ -310,6 +310,7 @@ header {
 .w-music-list-item {
   display: block;
   padding: 4px;
+  font-size: 16px;
   color: #f0fff0;
 }
 
