@@ -106,8 +106,7 @@ export default {
       delayedDragging: false,
       musicList: [],
       curIndex: 0,
-      audioContextFlag: 0,
-      test: 
+      audioContextFlag: 0
     }
   },
   watch: {
