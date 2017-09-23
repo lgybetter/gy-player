@@ -245,6 +245,7 @@ header {
 }
 
 .w-music-detail h1, h2 {
+  margin: 8px;
   display: -webkit-box;
   width: 180px;
   overflow: hidden;
@@ -255,6 +256,7 @@ header {
 
 .w-music-detail h1 {
   font-size: 18px;
+  height: 50px;
   color: #d590da;
 }
 
