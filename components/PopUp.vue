@@ -50,7 +50,7 @@ export default {
 <style scoped>
 .w-popup-container {
   display: block;
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -59,7 +59,7 @@ export default {
 }
 
 .w-popup-content {
-  position: absolute;
+  position: relative;
   z-index: 12;
   padding: 16px 8px;
   height: 100%;
@@ -68,11 +68,11 @@ export default {
   top: 0;
   left: -250px;
   background: rgba(209,95,238,.6);
-  transition: left .5s;
+  transition: all .5s;
 }
 
 .w-popup-content-show {
-  left: 0;
+  transform: translateX(250px);
 }
 
 </style>
