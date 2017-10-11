@@ -40,9 +40,9 @@
         <h3 class="w-music-list-title">我的歌单</h3>
         <draggable class="w-music-list" element="ul" v-model="musicList" :options="dragOptions" :move="handleMove" @start="isDragging=true"　@end="isDragging=false">
           <transition-group type="transition" :name="'flip-list'">
-            <li class="w-music-list-item" v-for="item in musicList" :key="item.order"> 
-              {{item.name}}
-            </li> 
+            <li class="w-music-list-item" v-for="(item, index) in musicList" :key="item.order"> 
+              <playing class="w-playing-showing" v-if="index === curIndex && playing"></playing>{{item.name}}
+            </li>
           </transition-group>
         </draggable>
       </div>
@@ -53,8 +53,9 @@
 
 <script>
 import draggable from 'vuedraggable'
-import sildeBar from '../../components/SlideBar'
-import popUp from '../../components/PopUp'
+import sildeBar from '../../components/slidebar'
+import popUp from '../../components/popup'
+import playing from '../../components/playing'
 import { formatSec } from '../../utils'
 import { initAudioContext } from './audio-context'
 const list = [
@@ -146,7 +147,8 @@ export default {
   components: {
     sildeBar,
     popUp,
-    draggable
+    draggable,
+    playing
   },
   methods: {
     timeupdate (event) {
@@ -309,11 +311,20 @@ header {
   margin: 16px 0;
 }
 
+
 .w-music-list-item {
-  display: block;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
   padding: 4px;
-  font-size: 16px;
+  font-size: 15px;
   color: #f0fff0;
+}
+
+.w-playing-showing {
+  position: absolute;
+  left: -25px;
+  top: -1px;
 }
 
 .w-music-list-title {
